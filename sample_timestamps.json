@@ -1,0 +1,25 @@
+{
+  "voice": {
+    "file": "voice_full.mp3"
+  },
+  "visuals": [
+    {
+      "type": "image",
+      "file": "img_01.png",
+      "start": 0.0,
+      "end": 3.2
+    },
+    {
+      "type": "video",
+      "file": "clip_02.mp4",
+      "start": 3.2,
+      "end": 7.5
+    },
+    {
+      "type": "image",
+      "file": "img_03.png",
+      "start": 7.5,
+      "end": 10.0
+    }
+  ]
+}

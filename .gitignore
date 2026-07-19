@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.gui_settings.json
+venv/
+.venv/
+.vscode/
+.idea/
