@@ -337,7 +337,20 @@ def main():
         sys.exit(0)
 
     # 7. REBUILD TRACKS
-    script.imported_tracks = []
+    # Giữ lại các track có sẵn của người dùng (BGM, âm thanh, text)
+    # Chỉ xóa các track mà tool đã tạo ra trước đó ("Voice Track", "Visual Track")
+    retained_imported_tracks = []
+    for t in script.imported_tracks:
+        if isinstance(t, dict):
+            name = t.get("name", "")
+            if name not in ["Voice Track", "Visual Track"]:
+                retained_imported_tracks.append(t)
+        else:
+            name = getattr(t, "name", "")
+            if name not in ["Voice Track", "Visual Track"]:
+                retained_imported_tracks.append(t)
+
+    script.imported_tracks = retained_imported_tracks
     script.tracks = {}
     script.duration = 0
 
