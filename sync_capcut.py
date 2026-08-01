@@ -377,17 +377,49 @@ def main():
 
     # 7. DỰNG LẠI TRACKS VÀ SEGMENTS
     # Giữ lại các track có sẵn của người dùng (BGM, âm thanh, text, sticker...)
-    # Chỉ xóa các track mà tool đã tạo ra trước đó ("Voice Track", "Visual Track")
+    # Xóa các track mà tool đã tạo ra trước đó ("Voice Track", "Visual Track")
+    # Hoặc xóa các track chứa đúng các file hình/ảnh/voice mà chúng ta đang đồng bộ (để tránh nhân đôi)
+    voice_mat_id = voice_mat.get("id") or voice_mat.get("material_id") if voice_mat else None
+    
+    visual_mat_ids = set()
+    for item in matched_visuals:
+        mat_id = item["material"].get("id") or item["material"].get("material_id")
+        if mat_id:
+            visual_mat_ids.add(mat_id)
+
     retained_imported_tracks = []
     for t in script.imported_tracks:
+        is_tool_track = False
+        
+        # 1. Kiểm tra theo tên (cho cả dict lẫn object ImportedMediaTrack)
         if isinstance(t, dict):
             name = t.get("name", "")
-            if name not in ["Voice Track", "Visual Track"]:
-                retained_imported_tracks.append(t)
+            segments = t.get("segments", [])
         else:
-            name = getattr(t, "name", "")
-            if name not in ["Voice Track", "Visual Track"]:
-                retained_imported_tracks.append(t)
+            name = getattr(t, "name", "") or (getattr(t, "raw_data", {}).get("name", "") if hasattr(t, "raw_data") else "")
+            segments = getattr(t, "segments", [])
+            
+        if name in ["Voice Track", "Visual Track"]:
+            is_tool_track = True
+            
+        # 2. Kiểm tra theo nội dung segment
+        if not is_tool_track:
+            for seg in segments:
+                if isinstance(seg, dict):
+                    mat_id = seg.get("material_id")
+                else:
+                    mat_id = getattr(seg, "material_id", None) or (getattr(seg, "raw_data", {}).get("material_id") if hasattr(seg, "raw_data") else None)
+
+                if mat_id:
+                    if voice_mat_id and mat_id == voice_mat_id:
+                        is_tool_track = True
+                        break
+                    if mat_id in visual_mat_ids:
+                        is_tool_track = True
+                        break
+                        
+        if not is_tool_track:
+            retained_imported_tracks.append(t)
 
     script.imported_tracks = retained_imported_tracks
     script.tracks = {}
