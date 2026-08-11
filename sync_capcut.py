@@ -434,6 +434,10 @@ def main():
         voice_material_obj.material_id = voice_mat.get("id") or voice_mat.get("material_id")
     
     voice_duration_us = int(round(voice_duration * 1e6))
+    if hasattr(voice_material_obj, "duration") and voice_material_obj.duration > 0:
+        if voice_duration_us > voice_material_obj.duration:
+            voice_duration_us = voice_material_obj.duration
+
     voice_segment = AudioSegment(
         voice_material_obj,
         Timerange(0, voice_duration_us),
