@@ -37,8 +37,8 @@ class CapCutSyncGUI:
         self.drafts_dir_entry.grid(row=0, column=1, padx=(5, 5), sticky=tk.EW, pady=5)
         ttk.Button(inputs_frame, text="Browse...", command=self.browse_drafts_dir).grid(row=0, column=2, pady=5)
 
-        # Timestamps File (TXT/JSON)
-        ttk.Label(inputs_frame, text="File Timestamps (TXT/JSON):").grid(row=1, column=0, sticky=tk.W, pady=5)
+        # Timestamps File (TXT/JSON/SRT)
+        ttk.Label(inputs_frame, text="File Timestamps (TXT/JSON/SRT):").grid(row=1, column=0, sticky=tk.W, pady=5)
         self.timestamps_var = tk.StringVar()
         self.timestamps_entry = ttk.Entry(inputs_frame, textvariable=self.timestamps_var, width=60)
         self.timestamps_entry.grid(row=1, column=1, padx=(5, 5), sticky=tk.EW, pady=5)
@@ -142,11 +142,12 @@ class CapCutSyncGUI:
 
     def browse_timestamps(self):
         file_selected = filedialog.askopenfilename(
-            title="Chọn file timestamps (TXT/JSON)",
+            title="Chọn file timestamps (TXT/JSON/SRT)",
             filetypes=[
-                ("Timestamp Files", "*.txt;*.json"),
+                ("Timestamp Files", "*.txt;*.json;*.srt"),
                 ("Text Files", "*.txt"),
                 ("JSON Files", "*.json"),
+                ("SRT Subtitle Files", "*.srt"),
                 ("All Files", "*.*")
             ]
         )
@@ -240,7 +241,7 @@ class CapCutSyncGUI:
         timestamps = self.timestamps_var.get()
 
         if not drafts_dir or not project_name or not timestamps:
-            messagebox.showerror("Thiếu thông tin", "Vui lòng chọn một dự án trong bảng và chọn tệp timestamps (TXT hoặc JSON).")
+            messagebox.showerror("Thiếu thông tin", "Vui lòng chọn một dự án trong bảng và chọn tệp timestamps (TXT, JSON hoặc SRT).")
             return
 
         self.save_settings()
@@ -258,7 +259,13 @@ class CapCutSyncGUI:
 
     def run_sync_process(self, drafts_dir, project_name, timestamps):
         is_json = timestamps.lower().endswith(".json")
-        script_name = "sync_capcut_json.py" if is_json else "sync_capcut.py"
+        is_srt = timestamps.lower().endswith(".srt")
+        if is_json:
+            script_name = "sync_capcut_json.py"
+        elif is_srt:
+            script_name = "sync_capcut_srt.py"
+        else:
+            script_name = "sync_capcut.py"
         script_path = os.path.join(os.path.dirname(__file__), script_name)
         
         cmd = [
